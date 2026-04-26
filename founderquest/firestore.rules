@@ -1,49 +1,43 @@
 rules_version = '2';
 
-// FounderQuest · Firestore Security Rules
-// Modelo de datos:
-//   users/{uid}/actions/{actionId}   ← log de acciones (XP)
-//   users/{uid}/contacts/{contactId} ← pipeline de aliados
-//
-// Regla general: un usuario autenticado SOLO puede leer y escribir
-// dentro de su propio subárbol users/{uid}/... Nadie más.
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper: el usuario está autenticado y es dueño del recurso
     function isOwner(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
 
-    // Bloqueo por defecto: todo lo demás denegado
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Subcolección de acciones logueadas
+    // Acciones logueadas. La lista blanca de actionIds incluye sales + jobhunt.
+    // El XP máximo subió a 250 (igual que antes, OFFER_RECEIVED entra en rango).
     match /users/{uid}/actions/{actionId} {
       allow read: if isOwner(uid);
 
-      // Al crear, validamos que el payload sea consistente y
-      // que el usuario no pueda asignarse XP arbitrario (ver lista blanca de XP)
       allow create: if isOwner(uid)
         && request.resource.data.keys().hasAll(['actionId', 'xp', 'label'])
         && request.resource.data.xp is int
         && request.resource.data.xp >= 0
         && request.resource.data.xp <= 250
         && request.resource.data.actionId in [
+            // Sales
             'LINKEDIN_MSG', 'RECEIVE_NO', 'POSITIVE_REPLY',
-            'MEET_15', 'PAIN_FOUND', 'PITCH_MENSSO', 'CLOSE'
+            'MEET_15', 'PAIN_FOUND', 'PITCH_MENSSO', 'CLOSE',
+            // Jobhunt
+            'APPLY_JOB', 'CV_FEEDBACK', 'PUBLISH_LI',
+            'REJECTION_JOB', 'CONNECT_LEADER', 'TECH_INTERVIEW',
+            'OFFER_RECEIVED'
           ];
 
-      // Las acciones son append-only: no permitimos editarlas,
-      // así la bitácora es un registro honesto del camino.
       allow update: if false;
       allow delete: if isOwner(uid);
     }
 
-    // Subcolección de contactos (aliados del pipeline)
+    // Contactos. Stages combinados de ambos tracks (la app filtra
+    // visualmente por track, pero la regla acepta cualquier stage válido
+    // de cualquier track para no complicar el modelo).
     match /users/{uid}/contacts/{contactId} {
       allow read: if isOwner(uid);
 
@@ -52,15 +46,21 @@ service cloud.firestore {
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 120
         && request.resource.data.stage in [
-            'prospecto', 'contactado', 'conversacion', 'validado', 'cierre'
-          ];
+            // Sales
+            'prospecto', 'contactado', 'conversacion', 'validado', 'cierre',
+            // Jobhunt (prospecto y contactado se reusan)
+            'entrevista', 'oferta', 'rechazado'
+          ]
+        && request.resource.data.track in ['sales', 'jobhunt'];
 
       allow update: if isOwner(uid)
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.stage in [
-            'prospecto', 'contactado', 'conversacion', 'validado', 'cierre'
-          ];
+            'prospecto', 'contactado', 'conversacion', 'validado', 'cierre',
+            'entrevista', 'oferta', 'rechazado'
+          ]
+        && request.resource.data.track in ['sales', 'jobhunt'];
 
       allow delete: if isOwner(uid);
     }

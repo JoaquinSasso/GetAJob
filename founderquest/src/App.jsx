@@ -2,10 +2,12 @@
 import React, { useState } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { useGameData } from "./hooks/useGameData";
+import { useTrack } from "./hooks/useTrack";
 import Dashboard from "./components/Dashboard";
 import Pipeline from "./components/Pipeline";
 import Bitacora from "./components/Bitacora";
 import ConnectionStatus from "./components/ConnectionStatus";
+import TrackSelector from "./components/TrackSelector";
 import "./styles.css";
 
 export default function App() {
@@ -55,10 +57,17 @@ export default function App() {
 
 function GameShell({ user, tab, setTab, logout }) {
 	const data = useGameData(user.uid);
+	const [activeTrack, setActiveTrack] = useTrack();
+
+	// Filtramos contactos del track activo para Pipeline
+	const trackContacts = data.contactsByTrack(activeTrack);
+	// Filtramos acciones para Bitácora
+	const trackActions = data.actionsByTrack(activeTrack);
 
 	return (
 		<Shell>
 			<ConnectionStatus />
+
 			<header className="fq-header">
 				<div>
 					<div className="fq-label fq-label--dim">OPERADOR</div>
@@ -71,6 +80,9 @@ function GameShell({ user, tab, setTab, logout }) {
 				</button>
 			</header>
 
+			{/* SELECTOR DE TRACK - persiste entre sesiones */}
+			<TrackSelector active={activeTrack} onChange={setActiveTrack} />
+
 			<main className="fq-main">
 				{tab === "dash" && (
 					<Dashboard
@@ -78,18 +90,22 @@ function GameShell({ user, tab, setTab, logout }) {
 						totalXp={data.totalXp}
 						rejectionCount={data.rejectionCount}
 						closeCount={data.closeCount}
+						activeTrack={activeTrack}
+						xpByTrack={data.xpByTrack}
+						actionsByTrack={data.actionsByTrack}
 						onLogAction={data.logAction}
 					/>
 				)}
 				{tab === "pipe" && (
 					<Pipeline
-						contacts={data.contacts}
+						contacts={trackContacts}
+						activeTrack={activeTrack}
 						onAdd={data.addContact}
 						onUpdate={data.updateContact}
 						onDelete={data.deleteContact}
 					/>
 				)}
-				{tab === "log" && <Bitacora actions={data.actions} />}
+				{tab === "log" && <Bitacora actions={trackActions} />}
 			</main>
 
 			<nav className="fq-nav">

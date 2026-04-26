@@ -221,6 +221,90 @@ body {
 .fq-stat--rejection .fq-stat__label { color: var(--fq-amber); }
 .fq-stat--gold .fq-stat__value { color: var(--fq-gold); }
 
+/* ─────────── TRACK SELECTOR ─────────── */
+
+.fq-track-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: var(--fq-bg-2);
+  border: 1px solid var(--fq-line);
+  padding: 4px;
+  margin-bottom: 18px;
+}
+.fq-track-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--fq-dim);
+  padding: 10px 12px;
+  cursor: pointer;
+  font-family: var(--fq-mono);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+}
+.fq-track-btn:hover {
+  color: var(--fq-ink);
+}
+.fq-track-btn--active {
+  background: var(--fq-panel);
+  border-color: currentColor;
+  box-shadow: 0 0 12px rgba(124, 245, 163, 0.15);
+}
+.fq-track-btn__icon {
+  font-size: 14px;
+}
+.fq-track-btn__label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+}
+
+/* Variante de challenge según track */
+.fq-challenge--track-jobhunt .fq-challenge__count-now {
+  color: #6bb6ff;
+  text-shadow: 0 0 14px rgba(107, 182, 255, 0.35);
+}
+.fq-challenge--track-jobhunt:not(.fq-challenge--done):not(.fq-challenge--warning) .fq-challenge__bar-fill {
+  background: linear-gradient(90deg, #1f4a8a, #6bb6ff);
+  box-shadow: 0 0 16px rgba(107, 182, 255, 0.3);
+}
+.fq-challenge__sub {
+  font-size: 10px;
+  color: var(--fq-dim);
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+/* Acciones especiales nuevas */
+.fq-action--exposure {
+  border-color: rgba(107, 182, 255, 0.4);
+}
+.fq-action--exposure .fq-action__icon { color: #6bb6ff; }
+.fq-action--exposure .fq-action__xp { background: #6bb6ff; }
+.fq-action--milestone {
+  border-color: rgba(255, 211, 107, 0.4);
+  background: linear-gradient(135deg, rgba(255, 211, 107, 0.04), transparent 60%), var(--fq-panel);
+}
+.fq-action--milestone .fq-action__icon { color: var(--fq-gold); }
+.fq-action--milestone .fq-action__xp { background: var(--fq-gold); }
+
+/* Campo role en contact card */
+.fq-contact__role {
+  font-size: 11px;
+  color: var(--fq-blue);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Border-left dinámico según stage del contacto */
+.fq-contact {
+  border-left-width: 3px;
+  border-left-style: solid;
+}
+
 /* ─────────── CONNECTION STATUS ─────────── */
 
 .fq-conn {
